@@ -1,4 +1,4 @@
-unit Module.Rename;
+unit Classes.Rename;
 
 interface
 
