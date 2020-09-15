@@ -7,7 +7,7 @@ program DXVersionRename;
 
 uses
   System.SysUtils,
-  Module.Rename in 'Module.Rename.pas';
+  Classes.Rename in 'Classes.Rename.pas';
 
 begin
   try
@@ -16,12 +16,16 @@ begin
     if LFileToRename = '' then
     begin
       Writeln('Usage:');
-      Writeln('DXVersion.exe {File to rename}');
+      Writeln('DXVersion.exe {File to rename} [-copy]');
+      Writeln('If -copy option is present, then the file will be copied instead of renamed.');
+      Writeln('That leaves the original file unchanged.');
     end
     else
     begin
       var
-      LNewFilename := TRename.RenameToVersion(LFileToRename);
+      LCopy := ParamStr(2).ToLower.Trim = '-copy';
+      var
+      LNewFilename := TRename.RenameToVersion(LFileToRename, LCopy);
       Writeln(Format('%s renamed to %s', [LFileToRename, LNewFilename]));
     end;
   except

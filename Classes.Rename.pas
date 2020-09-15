@@ -8,7 +8,7 @@ uses
 type
   TRename = class(TObject)
   public
-    class function RenameToVersion(const AFilename: string): string;
+    class function RenameToVersion(const AFilename: string; ACopy: boolean = false): string;
   end;
 
 implementation
@@ -18,7 +18,7 @@ uses
   DX.Utils.Windows;
 { TRename }
 
-class function TRename.RenameToVersion(const AFilename: string): string;
+class function TRename.RenameToVersion(const AFilename: string; ACopy: boolean = false): string;
 var
   LVersion: string;
   LNewFilename: string;
@@ -47,7 +47,14 @@ begin
           ]);
 
         LNewFilename := TPath.Combine(TPath.GetDirectoryName(LFilename), LNewFilename);
-        TFile.Move(AFilename, LNewFilename);
+        if ACopy then
+        begin
+          TFile.Copy(AFilename, LNewFilename, true);
+        end
+        else
+        begin
+          TFile.Move(AFilename, LNewFilename);
+        end;
         result := LNewFilename;
       end;
     end;
