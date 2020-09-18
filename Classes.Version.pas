@@ -1,4 +1,4 @@
-unit Classes.Rename;
+unit Classes.Version;
 
 interface
 
@@ -6,9 +6,9 @@ uses
   System.Classes, System.SysUtils, System.IOUtils;
 
 type
-  TRename = class(TObject)
+  TVersion = class(TObject)
   public
-    class function RenameToVersion(const AFilename: string; ACopy: boolean = false): string;
+    class function Process(const AFilename: string; ACopy, AEcho, ARename: boolean): string;
   end;
 
 implementation
@@ -18,7 +18,7 @@ uses
   DX.Utils.Windows;
 { TRename }
 
-class function TRename.RenameToVersion(const AFilename: string; ACopy: boolean = false): string;
+class function TVersion.Process(const AFilename: string; ACopy, AEcho, ARename: boolean): string;
 var
   LVersion: string;
   LNewFilename: string;
@@ -47,15 +47,24 @@ begin
           ]);
 
         LNewFilename := TPath.Combine(TPath.GetDirectoryName(LFilename), LNewFilename);
+        result := LNewFilename;
         if ACopy then
         begin
           TFile.Copy(AFilename, LNewFilename, true);
         end
-        else
+        else if AEcho then
         begin
+          result := LVersion;
+        end
+        else if ARename then
+        begin
+          if TFile.Exists(LNewFilename) then
+          begin
+            TFile.Delete(LNewFilename);
+          end;
           TFile.Move(AFilename, LNewFilename);
         end;
-        result := LNewFilename;
+
       end;
     end;
   end;
