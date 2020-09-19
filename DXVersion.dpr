@@ -16,34 +16,38 @@ begin
     var
     LCopy := ParamStr(2).ToLower.Trim = '-copy';
     var
+    LGit := ParamStr(2).ToLower.Trim = '-git';
+    var
     LRename := ParamStr(2).ToLower.Trim = '-rename';
     var
     LEcho := ParamStr(2).ToLower.Trim = '-echo';
     var
     LVerbose := ParamStr(3).ToLower.Trim = '-verbose';
 
-    if (LFileToProcess = '') or (not LCopy and not LRename and not LEcho) then
+    if (LFileToProcess = '') or (not LCopy and not LRename and not LEcho and not LGit) then
     begin
       Writeln('DXVersion 1.1 - (c) 2020, Developer Experts');
       Writeln('-------------------------------------------');
       Writeln('DXVersion processes the given file by extracting its version info (if exists)');
-      Writeln('and, depending on selected mode, it will copy or rename the file to match its ');
+      Writeln('and, depending on selected mode, it will copy or rename the file to match its');
       Writeln('version number.');
-      Writeln('Example: foo.exe with version 1.2.3.4 will be renamed to foo_1.2.3.4.exe.');
-
+      Writeln('In git mode the directory of the file is assumed to be a git working directory,');
+      Writeln('And will be tagged (git tag) with the file''s version number');
+      Writeln('Example: foo.exe with version 1.2.3.4 will be copied/renamed to foo_1.2.3.4.exe.');
       Writeln;
       Writeln('Usage:');
-      Writeln('DXVersion.exe {File to process} {-copy|-echo|-rename} [-verbose]');
+      Writeln('DXVersion.exe {File to process} {-copy|-echo|-rename|-git} [-verbose]');
       Writeln('Modes:');
       Writeln('copy    : The file will be copied into the same directory. The original file is kept.');
       Writeln('echo    : The file''s version info will be echoed.');
       Writeln('rename  : The file will be renamed.');
+      Writeln('git     : Create a "tag" using the version number in the current working directory.');
       Writeln('verbose : Print some details.');
     end
     else
     begin
       var
-      LNewFilename := TVersion.Process(LFileToProcess, LCopy, LEcho, LRename);
+      LNewFilename := TVersion.Process(LFileToProcess, LCopy, LEcho, LRename, LGit);
 
       if LEcho then
       begin
@@ -68,7 +72,10 @@ begin
     end;
   except
     on E: Exception do
+    begin
       Writeln('Error: ', E.Message);
+      ExitCode := 1;
+    end;
   end;
 
 end.

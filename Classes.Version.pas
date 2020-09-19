@@ -7,8 +7,11 @@ uses
 
 type
   TVersion = class(TObject)
+  protected
+    class procedure GitCheckDirty(const AWorkingDirectory: string);
+    class procedure GitTag(const AWorkingDirectory: string; AVersion: string);
   public
-    class function Process(const AFilename: string; ACopy, AEcho, ARename: boolean): string;
+    class function Process(const AFilename: string; ACopy, AEcho, ARename, AGit: boolean): string;
   end;
 
 implementation
@@ -18,7 +21,36 @@ uses
   DX.Utils.Windows;
 { TRename }
 
-class function TVersion.Process(const AFilename: string; ACopy, AEcho, ARename: boolean): string;
+class procedure TVersion.GitCheckDirty(const AWorkingDirectory: string);
+var
+  LParams: string;
+  LResult: string;
+begin
+  LParams := '-C ' + AWorkingDirectory + ' diff --shortstat';
+  LResult := ExecuteCommand('git ' + LParams);
+  if LResult.ToLower.Contains('changed') then
+    raise Exception.CreateFmt('%s is dirty!'#13#10 + LResult, [AWorkingDirectory]);
+end;
+
+class procedure TVersion.GitTag(const AWorkingDirectory: string; AVersion: string);
+var
+  LVersion: string;
+  LParams: string;
+  LResult: string;
+begin
+  LVersion := AVersion.Trim;
+  if TDirectory.Exists(AWorkingDirectory) and (LVersion > '') then
+  begin
+    GitCheckDirty(AWorkingDirectory);
+    // git -C %directory% tag -a "%tag%" -m "%message%"
+    LParams := '-C "' + AWorkingDirectory + '" tag -a ' + AVersion + ' -m ' + '"Build: ' + AVersion + '"';
+    LResult := ExecuteCommand('git ' + LParams);
+    if LResult.ToLower.Contains('fatal') then
+      raise Exception.CreateFmt('Tagging %s failed!'#13#10 + LResult, [AWorkingDirectory]);
+  end;
+end;
+
+class function TVersion.Process(const AFilename: string; ACopy, AEcho, ARename, AGit: boolean): string;
 var
   LVersion: string;
   LNewFilename: string;
@@ -36,7 +68,7 @@ begin
       // Do nothing if this file was already renamed
       if not LFilename.EndsWith(LVersion) then
       begin
-        // Remove any pre-existin versioning
+        // Remove any pre-existing versioning
         // https://regex101.com/r/jVuuJM/1
         LFilename := TRegEx.Replace(LFilename, '(.*)(_\d*\.\d*\.\d*\.\d*)', '\1');
 
@@ -63,8 +95,11 @@ begin
             TFile.Delete(LNewFilename);
           end;
           TFile.Move(AFilename, LNewFilename);
+        end
+        else if AGit then
+        begin
+          GitTag(TPath.GetDirectoryName(LFilename), LVersion);
         end;
-
       end;
     end;
   end;
