@@ -43,7 +43,7 @@ begin
   begin
     GitCheckDirty(AWorkingDirectory);
     // git -C %directory% tag -a "%tag%" -m "%message%"
-    LParams := '-C "' + AWorkingDirectory + '" tag -a ' + AVersion + ' -m ' + '"Build: ' + AVersion + '"';
+    LParams := '-C "' + AWorkingDirectory + '" tag -a v' + AVersion + ' -m ' + '"Build: ' + AVersion + '"';
     LResult := ExecuteCommand('git ' + LParams);
     if LResult.ToLower.Contains('fatal') then
       raise Exception.CreateFmt('Tagging %s failed!'#13#10 + LResult, [AWorkingDirectory]);
