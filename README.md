@@ -7,5 +7,5 @@ DXVersion is a command line tool, that extracts the version info from a given fi
 - git : reads the file's version number and assumes that the current directory is agit working directory and tries to tag using the version number.
 - verbose : Print some more details.
 
-##Usage
+*Usage*
 DXVersion.exe {File to process} {-copy|-echo|-rename|-git} [-verbose]
