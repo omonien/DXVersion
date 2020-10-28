@@ -62,44 +62,44 @@ begin
   else
   begin
     LVersion := GetExeVersion(LFilename);
-    // Do nothing if file has no version information
-    if LVersion > '' then
+    // A version number is required obviously
+    if LVersion = '' then
+      raise Exception.CreateFmt('%s has no version information!', [LFilename]);
+
+    // Do nothing if this file was already renamed
+    if not LFilename.EndsWith(LVersion) then
     begin
-      // Do nothing if this file was already renamed
-      if not LFilename.EndsWith(LVersion) then
+      // Remove any pre-existing versioning
+      // https://regex101.com/r/jVuuJM/1
+      LFilename := TRegEx.Replace(LFilename, '(.*)(_\d*\.\d*\.\d*\.\d*)', '\1');
+
+      LNewFilename := Format('%s_%s%s', [
+        TPath.GetFileNameWithoutExtension(LFilename),
+        LVersion,
+        TPath.GetExtension(LFilename) // extension includes "."
+        ]);
+
+      LNewFilename := TPath.Combine(TPath.GetDirectoryName(LFilename), LNewFilename);
+      result := LNewFilename;
+      if ACopy then
       begin
-        // Remove any pre-existing versioning
-        // https://regex101.com/r/jVuuJM/1
-        LFilename := TRegEx.Replace(LFilename, '(.*)(_\d*\.\d*\.\d*\.\d*)', '\1');
-
-        LNewFilename := Format('%s_%s%s', [
-          TPath.GetFileNameWithoutExtension(LFilename),
-          LVersion,
-          TPath.GetExtension(LFilename) // extension includes "."
-          ]);
-
-        LNewFilename := TPath.Combine(TPath.GetDirectoryName(LFilename), LNewFilename);
-        result := LNewFilename;
-        if ACopy then
+        TFile.Copy(AFilename, LNewFilename, true);
+      end
+      else if AEcho then
+      begin
+        result := LVersion;
+      end
+      else if ARename then
+      begin
+        if TFile.Exists(LNewFilename) then
         begin
-          TFile.Copy(AFilename, LNewFilename, true);
-        end
-        else if AEcho then
-        begin
-          result := LVersion;
-        end
-        else if ARename then
-        begin
-          if TFile.Exists(LNewFilename) then
-          begin
-            TFile.Delete(LNewFilename);
-          end;
-          TFile.Move(AFilename, LNewFilename);
-        end
-        else if AGit then
-        begin
-          GitTag(TPath.GetDirectoryName(LFilename), LVersion);
+          TFile.Delete(LNewFilename);
         end;
+        TFile.Move(AFilename, LNewFilename);
+      end
+      else if AGit then
+      begin
+        GitTag(TPath.GetDirectoryName(LFilename), LVersion);
       end;
     end;
   end;

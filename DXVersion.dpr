@@ -25,10 +25,10 @@ begin
     LVerbose := ParamStr(3).ToLower.Trim = '-verbose';
 
     var
-    LVersion := DX.Utils.Windows.GetExeVersion('%d.%d');
+    LVersion := DX.Utils.Windows.GetExeVersionFmt('%d.%d');
     if (LFileToProcess = '') or (not LCopy and not LRename and not LEcho and not LGit) then
     begin
-      Writeln('DXVersion ' + LVersion + ' - (c) 2000, Developer Experts');
+      Writeln('DXVersion ' + LVersion + ' - (c) 2020, Developer Experts');
       Writeln('-------------------------------------------');
       Writeln('DXVersion processes the given file by extracting its version info (if exists)');
       Writeln('and, depending on selected mode, it will copy or rename the file to match its');
