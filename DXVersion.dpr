@@ -6,7 +6,7 @@ program DXVersion;
 
 
 uses
-  System.SysUtils,
+  System.SysUtils, DX.Utils.Windows,
   Classes.Version in 'Classes.Version.pas';
 
 begin
@@ -24,9 +24,11 @@ begin
     var
     LVerbose := ParamStr(3).ToLower.Trim = '-verbose';
 
+    var
+    LVersion := DX.Utils.Windows.GetExeVersion('%d.%d');
     if (LFileToProcess = '') or (not LCopy and not LRename and not LEcho and not LGit) then
     begin
-      Writeln('DXVersion 1.1 - (c) 2020, Developer Experts');
+      Writeln('DXVersion ' + LVersion + ' - (c) 2000, Developer Experts');
       Writeln('-------------------------------------------');
       Writeln('DXVersion processes the given file by extracting its version info (if exists)');
       Writeln('and, depending on selected mode, it will copy or rename the file to match its');
@@ -43,6 +45,7 @@ begin
       Writeln('rename  : The file will be renamed.');
       Writeln('git     : Create a "tag" using the version number in the current working directory.');
       Writeln('verbose : Print some details.');
+      ExitCode := 1;
     end
     else
     begin
@@ -67,6 +70,10 @@ begin
         begin
           LMessage := '%s renamed to %s';
         end;
+        if LGit then
+        begin
+          LMessage := 'Working directory tagged!';
+        end;
         Writeln(Format(LMessage, [LFileToProcess, LNewFilename]));
       end;
     end;
@@ -77,5 +84,6 @@ begin
       ExitCode := 1;
     end;
   end;
-
+  if DebugHook <> 0 then
+    readln;
 end.
